@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evaluación de Laboratorio 2</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            margin: 0;
+            padding: 30px;
+            color: #1f2937;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+            margin: auto;
+            background: white;
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            color: #123b74;
+        }
+
+        .formulario {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+            font-weight: bold;
+        }
+
+        input {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .acciones {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            border: none;
+            padding: 12px 18px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            background: #2563eb;
+        }
+
+        button:nth-child(2) { background: #16a34a; }
+        button:nth-child(3) { background: #d97706; }
+        button:nth-child(4) { background: #dc2626; }
+        button:nth-child(5) { background: #7c3aed; }
+        button:nth-child(6) { background: #0f766e; }
+
+        .resultado {
+            background: #111827;
+            color: #e5e7eb;
+            border-radius: 10px;
+            padding: 18px;
+            min-height: 180px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <h1>Gestión de Empleados</h1>
+
+        <div class="formulario">
+            <label class="campo">
+                ID
+                <input type="number" id="id" placeholder="ID" />
+            </label>
+
+            <label class="campo">
+                DNI
+                <input type="text" id="dni" maxlength="8" placeholder="Ej: 45678901" />
+            </label>
+
+            <label class="campo">
+                Nombres
+                <input type="text" id="nombres" placeholder="Ej: Ana Gómez" />
+            </label>
+
+            <label class="campo">
+                Área
+                <input type="text" id="area" placeholder="Ej: TI" />
+            </label>
+
+            <label class="campo">
+                Sueldo
+                <input type="number" id="sueldo" step="0.01" placeholder="2500.00" />
+            </label>
+
+            <label class="campo">
+                Fecha Ingreso
+                <input type="date" id="fechaIngreso" />
+            </label>
+        </div>
+
+        <div class="acciones">
+            <button onclick="registrarEmpleado()">Registrar</button>
+            <button onclick="buscarPorId()">Buscar por ID</button>
+            <button onclick="listarEmpleados()">Listar</button>
+            <button onclick="eliminarEmpleado()">Eliminar</button>
+            <button onclick="buscarPorDni()">Buscar por DNI</button>
+            <button onclick="actualizarEmpleado()">Actualizar</button>
+        </div>
+
+        <div id="resultado" class="resultado">
+            Sistema listo para operar.
+        </div>
+    </div>
+
+    <script>
+        const apiUrl = '/api/empleados';
+        const resultado = document.getElementById('resultado');
+
+        function obtenerDatos() {
+            return {
+                id: Number(document.getElementById('id').value || 0),
+                dni: document.getElementById('dni').value,
+                nombres: document.getElementById('nombres').value,
+                area: document.getElementById('area').value,
+                sueldo: Number(document.getElementById('sueldo').value || 0),
+                fechaIngreso: document.getElementById('fechaIngreso').value
+            };
+        }
+
+        async function registrarEmpleado() {
+            const data = obtenerDatos();
+
+            const respuesta = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dni: data.dni,
+                    nombres: data.nombres,
+                    area: data.area,
+                    sueldo: data.sueldo,
+                    fechaIngreso: data.fechaIngreso
+                })
+            });
+
+            const texto = await respuesta.text();
+            resultado.textContent = texto;
+        }
+
+        async function listarEmpleados() {
+            const respuesta = await fetch(apiUrl);
+            const datos = await respuesta.json();
+            resultado.textContent = JSON.stringify(datos, null, 2);
+        }
+
+        async function buscarPorId() {
+            const id = document.getElementById('id').value;
+            const respuesta = await fetch(`${apiUrl}/id/${id}`);
+            const texto = await respuesta.text();
+            resultado.textContent = texto;
+        }
+
+        async function buscarPorDni() {
+            const dni = document.getElementById('dni').value;
+            const respuesta = await fetch(`${apiUrl}/dni/${dni}`);
+            const texto = await respuesta.text();
+            resultado.textContent = texto;
+        }
+
+        async function actualizarEmpleado() {
+            const data = obtenerDatos();
+
+            const respuesta = await fetch(`${apiUrl}/${data.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dni: data.dni,
+                    nombres: data.nombres,
+                    area: data.area,
+                    sueldo: data.sueldo,
+                    fechaIngreso: data.fechaIngreso
+                })
+            });
+
+            const texto = await respuesta.text();
+            resultado.textContent = texto;
+        }
+
+        async function eliminarEmpleado() {
+            const id = document.getElementById('id').value;
+            const respuesta = await fetch(`${apiUrl}/${id}`, {
+                method: 'DELETE'
+            });
+
+            const texto = await respuesta.text();
+            resultado.textContent = texto;
+        }
+    </script>
+</body>
+</html>
