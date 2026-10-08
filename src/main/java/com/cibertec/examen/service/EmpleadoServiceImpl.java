@@ -26,7 +26,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         String sql = "INSERT INTO empleado (dni, nombres, area, sueldo, fecha_ingreso) VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement statement = connection.prepareStatement(sql, new String[]{"id"});
             statement.setString(1, dni);
@@ -38,7 +37,6 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         }, keyHolder);
 
         Long idGenerado = keyHolder.getKey() != null ? keyHolder.getKey().longValue() : null;
-
         if (idGenerado == null) {
             return null;
         }
@@ -49,17 +47,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public boolean actualizarEmpleado(long id, String dni, String nombres, String area, double sueldo, String fechaIngreso) {
         String sql = "UPDATE empleado SET dni = ?, nombres = ?, area = ?, sueldo = ?, fecha_ingreso = ? WHERE id = ?";
-
-        int filas = jdbcTemplate.update(
-                sql,
+        int filas = jdbcTemplate.update(sql,
                 dni,
                 nombres,
                 area,
                 sueldo,
                 Date.valueOf(LocalDate.parse(fechaIngreso)),
-                id
-        );
-
+                id);
         return filas > 0;
     }
 
